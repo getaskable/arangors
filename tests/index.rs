@@ -12,7 +12,8 @@ use arangors::{
         response::Status,
         CollectionType,
     },
-    index::{Index, IndexSettings},
+    document::options::InsertOptions,
+    index::{Index, IndexSettings, VectorIndexParams},
     ClientError, Connection, Document,
 };
 use common::{get_arangodb_host, get_normal_password, get_normal_user, test_setup};
@@ -260,6 +261,72 @@ async fn test_fulltext_index() {
     if let IndexSettings::Fulltext { min_length } = index.settings {
         assert_eq!(min_length, 100);
     }
+}
+
+#[maybe_async::test(
+    any(feature = "reqwest_blocking"),
+    async(any(feature = "reqwest_async"), tokio::test),
+    async(any(feature = "surf_async"), async_std::test)
+)]
+async fn test_vector_index() {
+    test_setup();
+    let collection_name = "test_collection_vector";
+    let index_name = "idx_vector_test";
+    let conn = connection().await;
+
+    let database = conn.db("test_db").await.unwrap();
+
+    database.drop_collection(collection_name).await.unwrap();
+    let collection = database
+        .create_collection(collection_name)
+        .await
+        .expect("Failed to create vector collection");
+
+    // document required for index creation
+    let vector_doc = json!({
+        "embedding": vec![0.0; 256],
+    });
+
+    collection
+        .create_document(vector_doc, InsertOptions::default())
+        .await
+        .unwrap();
+
+    let index = Index::builder()
+        .name(index_name)
+        .fields(vec!["embedding".to_string()])
+        .settings(IndexSettings::Vector {
+            params: VectorIndexParams {
+                metric: "cosine".to_string(),
+                dimension: 256,
+                n_lists: 1,
+                ..Default::default()
+            },
+        })
+        .build();
+
+    println!("Creating index: {:?}", serde_json::to_string(&index));
+    let index = database
+        .create_index(collection_name, &index)
+        .await
+        .unwrap();
+
+    assert!(index.id.len() > 0);
+    assert_eq!(index.name, index_name.to_string());
+
+    if let IndexSettings::Vector { params } = index.settings {
+        assert_eq!(params.metric, "cosine");
+        assert_eq!(params.dimension, 256);
+        assert_eq!(params.n_lists, 1);
+    }
+
+    let list = database.indexes(collection_name).await.unwrap();
+
+    println!("List of indexes: {:?}", list);
+    assert!(list.indexes.len() > 0);
+
+    let delete_result = database.delete_index(&index.id).await.unwrap();
+    assert_eq!(delete_result.id, index.id);
 }
 
 #[maybe_async::test(

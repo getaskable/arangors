@@ -29,6 +29,7 @@ pub(crate) const INDEX_API_PATH: &str = "_api/index";
 /// * Persistent
 /// * Skiplist
 /// * Ttl (Time to live)
+/// * Vector
 ///
 /// As different settings may be applied to different index types, use the
 /// [`settings`] field on the index to specify the exact `type` of the index
@@ -85,6 +86,24 @@ pub struct Index {
     pub settings: IndexSettings,
 }
 
+/// Parameters for the vector index settings. Required for the `Vector` index type.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TypedBuilder)]
+#[serde(rename_all = "camelCase")]
+pub struct VectorIndexParams {
+    pub metric: String,
+    pub dimension: u32,
+    pub n_lists: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder(default)]
+    pub default_n_probe: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder(default)]
+    pub training_iterations: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder(default)]
+    pub factory: Option<String>,
+}
+
 /// Settings for the different index types. This `enum` also sets the index
 /// type.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -124,6 +143,10 @@ pub enum IndexSettings {
     #[serde(rename_all = "camelCase")]
     Fulltext {
         min_length: u32,
+    },
+    #[serde(rename_all = "camelCase")]
+    Vector {
+        params: VectorIndexParams,
     },
 }
 

@@ -16,6 +16,7 @@ curl -X POST "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST
 curl -X POST "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection" --data '{"name":"test_collection2"}'
 curl -X POST "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection" --data '{"name":"test_collection3"}'
 curl -X POST "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection" --data '{"name":"test_collection4"}'
+curl -X POST "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection" --data '{"name":"test_collection_vector"}'
 curl -X DELETE "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection/test_collection4"
 
 # set up normal user
@@ -25,6 +26,7 @@ curl -X PUT  "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST
 curl -X PUT  "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_api/user/username/database/test_db/test_collection1" --data '{"grant":"rw"}'
 curl -X PUT  "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_api/user/username/database/test_db/test_collection2" --data '{"grant":"ro"}'
 curl -X PUT  "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_api/user/username/database/test_db/test_collection3" --data '{"grant":"none"}'
+curl -X PUT  "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_api/user/username/database/test_db/test_collection_vector" --data '{"grant":"rw"}'
 
 # set up collection
 curl -X PUT "http://${ARANGO_ROOT_USER}:${ARANGO_ROOT_PASSWORD}@${ARANGODB_HOST}_db/test_db/_api/collection/test_collection/truncate"
